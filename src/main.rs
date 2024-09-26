@@ -2,7 +2,8 @@ mod api;
 mod config;
 
 use clap::Parser;
-use std::fs;
+use notify::{RecursiveMode, Watcher};
+use std::{path::Path, sync::mpsc};
 use tokio;
 
 use api::Flash;
@@ -19,6 +20,11 @@ struct Args {
     /// Specify config filename
     config: String,
 
+    #[clap(short = 'w', long = "watch")]
+    /// Enable watch mode
+    watch: bool,
+
+    #[clap(value_name = "script")]
     /// AiScript filename
     script: Option<String>,
 }
@@ -28,9 +34,25 @@ async fn main() {
     let args = Args::parse();
     let config = Config::load(&args.config);
     let flash = Flash::new(config);
-    let script = args
-        .script
-        .map(|filename| fs::read_to_string(&filename).unwrap());
-    flash.update(script).await;
-    println!("Updated the Play!");
+
+    if let Some(filename) = args.script {
+        flash.update_from_file(&filename).await;
+
+        if args.watch {
+            let (tx, rx) = mpsc::channel();
+            let mut watcher = notify::recommended_watcher(tx).unwrap();
+            watcher
+                .watch(Path::new(&filename), RecursiveMode::NonRecursive)
+                .unwrap();
+            println!("Watching '{}'...", filename);
+
+            loop {
+                rx.recv().unwrap().unwrap();
+                println!("'{}' Updated", filename);
+                flash.update_from_file(&filename).await;
+            }
+        }
+    } else {
+        flash.update(None).await;
+    }
 }

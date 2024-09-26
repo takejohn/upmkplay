@@ -1,4 +1,5 @@
 use serde_json::{json, Map, Value};
+use tokio::fs;
 use url::Url;
 
 use crate::config::Config;
@@ -28,6 +29,11 @@ impl Flash {
         }
     }
 
+    pub async fn update_from_file(&self, filename: &str) {
+        self.update(Some(fs::read_to_string(filename).await.unwrap()))
+            .await;
+    }
+
     pub async fn update(self: &Self, script: Option<String>) {
         let Flash {
             client,
@@ -44,6 +50,7 @@ impl Flash {
             .await
             .unwrap();
         res.error_for_status().unwrap();
+        println!("Updated the Play!");
     }
 }
 
