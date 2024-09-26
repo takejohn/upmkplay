@@ -3,11 +3,9 @@ use std::fs;
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Config {
-    pub host: String,
+    pub url: String,
 
     pub token: String,
-
-    pub id: String,
 
     pub title: Option<String>,
 
@@ -44,16 +42,14 @@ mod tests {
         assert_eq!(
             Config::parse(
                 r#"{
-                    "host": "https://misskey.io",
-                    "token": "abc",
-                    "id": "123",
+                    "url": "https://example.com/play/abcde12345",
+                    "token": "12345678abcdefghABCDEFGH12345678",
                     "title": "Test Play"
                 }"#
             ),
             Config {
-                host: String::from("https://misskey.io"),
-                token: String::from("abc"),
-                id: String::from("123"),
+                url: String::from("https://example.com/play/abcde12345"),
+                token: String::from("12345678abcdefghABCDEFGH12345678"),
                 title: Some(String::from("Test Play")),
                 summary: None,
                 visibility: None,
@@ -63,18 +59,16 @@ mod tests {
         assert_eq!(
             Config::parse(
                 r#"{
-                    "host": "https://misskey.io",
+                    "url": "https://example.com/play/abcde12345",
                     "token": "abc",
-                    "id": "123",
                     "title": "Test Play",
                     "summary": "Hello, world!",
                     "visibility": "private"
                 }"#
             ),
             Config {
-                host: String::from("https://misskey.io"),
+                url: String::from("https://example.com/play/abcde12345"),
                 token: String::from("abc"),
-                id: String::from("123"),
                 title: Some(String::from("Test Play")),
                 summary: Some(String::from("Hello, world!")),
                 visibility: Some(Visibility::Private),

@@ -1,8 +1,8 @@
 mod api;
 mod config;
 
-use std::fs;
 use clap::Parser;
+use std::fs;
 use tokio;
 
 use api::Flash;
@@ -28,7 +28,9 @@ async fn main() {
     let args = Args::parse();
     let config = Config::load(&args.config);
     let flash = Flash::new(config);
-    let script = args.script.map(|filename| fs::read_to_string(&filename).unwrap());
+    let script = args
+        .script
+        .map(|filename| fs::read_to_string(&filename).unwrap());
     flash.update(script).await;
     println!("Updated the Play!");
 }
